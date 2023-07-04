@@ -2,6 +2,7 @@ package envsubst
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 
@@ -108,11 +109,12 @@ func (t *Template) evalFunc(s *state, node *parse.FuncNode) error {
 	s.writer = w
 	s.node = node
 
-	v := s.mapper(node.Param, s.envs)
+	fmt.Printf("===== envs: %v", s.envs)
+	//v := s.mapper(node.Param, s.envs)
 
 	fn := lookupFunc(node.Name, len(args))
 
-	_, err := io.WriteString(s.writer, fn(v, args...))
+	_, err := io.WriteString(s.writer, fn(s.envs[node.Param], args...))
 	return err
 }
 
