@@ -178,9 +178,9 @@ func TestExpand(t *testing.T) {
 
 	for _, expr := range expressions {
 		t.Logf(expr.input)
-		output, err := Eval(expr.input, func(s string) string {
-			return expr.params[s]
-		})
+		output, err := Eval(expr.input, func(s string, envs map[string]string) string {
+			return envs[s]
+		}, expr.params)
 		if err != nil {
 			t.Errorf("Want %q expanded but got error %q", expr.input, err)
 		}

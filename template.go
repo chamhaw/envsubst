@@ -12,11 +12,12 @@ import (
 // template so that multiple executions can run in parallel.
 type state struct {
 	template *Template
+	envs     map[string]string
 	writer   io.Writer
 	node     parse.Node // current node
 
 	// maps variable names to values
-	mapper func(string) string
+	mapper func(string, map[string]string) string
 }
 
 // Template is the representation of a parsed shell format string.
@@ -46,11 +47,12 @@ func ParseFile(path string) (*Template, error) {
 }
 
 // Execute applies a parsed template to the specified data mapping.
-func (t *Template) Execute(mapping func(string) string) (str string, err error) {
+func (t *Template) Execute(mapping func(string, map[string]string) string, envs map[string]string) (str string, err error) {
 	b := new(bytes.Buffer)
 	s := new(state)
 	s.node = t.tree.Root
 	s.mapper = mapping
+	s.envs = envs
 	s.writer = b
 	err = t.eval(s)
 	if err != nil {
@@ -106,7 +108,7 @@ func (t *Template) evalFunc(s *state, node *parse.FuncNode) error {
 	s.writer = w
 	s.node = node
 
-	v := s.mapper(node.Param)
+	v := s.mapper(node.Param, s.envs)
 
 	fn := lookupFunc(node.Name, len(args))
 
